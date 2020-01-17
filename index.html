@@ -1,21 +1,165 @@
 <html>
-    <head></head>
+    <head>
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    </head>
     <body>
         <div id="app">
-          {{ message }}
+            <div class="container">
+                <div class="row text-center mt-3">
+                    <div class="col-4 offset-2">
+                        <p class="font-weight-bold">YOU</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="font-weight-bold">MONSTER</p>
+                    </div>
+                    
+                </div>
+                <div class="row text-center">
+                    <div class="col-4 offset-2">
+                        <div class="progress-bar" :class="(yourHealth>50 ? 'bg-success': yourHealth>30 ? 'bg-warning':'bg-danger')" role="progressbar" :style="{width: yourHealth+'%'}" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{yourHealth}}</div>
+                        <!-- <button class="btn btn-success btn-block">{{yourHealth}}</button> -->
+                        
+                    </div>
+                    <div class="col-4">
+                        <div class="progress-bar" :class="(monsterHealth>50 ? 'bg-success': monsterHealth>30 ? 'bg-warning':'bg-danger')" role="progressbar" :style="{width: monsterHealth+'%'}" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{monsterHealth}}</div>
+                        <!-- <button class="btn btn-success btn-block">{{monsterHealth}}</button> -->
+                        
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <button v-if="!started" @click="toggleStart" class="btn btn-outline-success">START NEW GAME</button>
+                                <button v-if="started" @click="attack" class="btn btn-outline-danger">ATTACK</button>
+                                <button v-if="started" @click="specialAttack" class="btn btn-outline-warning">SPECIAL ATTACK</button>
+                                <button v-if="started" @click="heal" class="btn btn-outline-success">HEAL</button>
+                                <button v-if="started" @click="giveUp" class="btn btn-outline-secondary">GIVE UP</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row mt-3" v-if="loggedMsgs.length > 0">
+                    <div class="col-12 text-center">
+                        <div class="card">
+                            <div class="card-body pre-scrollable">
+                                <p v-for="msg in loggedMsgs" :class="[msg.bg, msg.textColor]">{{msg.text}}</p>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+          
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script>
-            // let obj = {
-            //     fname: 'john',
-            //     lname: 'aris'
-            // }
-            // console.log(JSON.parse(JSON.stringify(obj)))
             var app = new Vue({
                 el: '#app',
                 data: {
-                    message: 'Hello Vue!'
+                    yourHealth: 100,
+                    monsterHealth: 100,
+                    started: false,
+                    loggedMsgs: []
+                },
+                methods: {
+                    toggleStart(){
+                        this.yourHealth = 100
+                        this.monsterHealth = 100
+                        this.loggedMsgs.length = 0
+                        this.started = !this.started
+                    },
+                    attack(){
+                        const yourPower = this.generateRandomNumber(10)  
+                        const monsterPower = this.generateRandomNumber(10)
+                        
+                        this.yourHealth -= monsterPower
+                        this.monsterHealth -= yourPower
+                        this.logMsg('monsturn', monsterPower)
+                        this.logMsg('userturn', yourPower)
+                        this.checkWinner()
+                        
+                    },
+                    specialAttack(){
+                        const yourPower = this.generateRandomNumber(15)  
+                        const monsterPower = this.generateRandomNumber(10)
+                        
+                        this.yourHealth -= monsterPower
+                        this.monsterHealth -= yourPower
+                        this.logMsg('monsturn', monsterPower)
+                        this.logMsg('userturn', yourPower)
+                        this.checkWinner()
+                    },
+                    heal(){
+                        const yourHeal = this.generateRandomNumber(15)  
+                        const monsterPower = this.generateRandomNumber(10)
+                        
+                        this.yourHealth += yourHeal
+                        if (this.yourHealth > 100) {
+                            this.yourHealth = 100
+                        }
+                        this.yourHealth -= monsterPower
+                        this.logMsg('heal', yourHeal)
+                        this.logMsg('monsturn', monsterPower)
+                        this.checkWinner()
+                        
+                    },
+                    giveUp(){
+                        const retry = confirm('Are you sure?')
+                        if (retry) {
+                            this.toggleStart()
+                            
+                        }
+                        
+                    },
+                    logMsg(param, power){
+                        if (param == 'heal') {
+                            this.loggedMsgs.push({
+                                bg: 'bg-success',
+                                textColor: 'text-white',
+                                text: 'PLAYER HEALS FOR ' + power
+                            })
+                        } else if (param == 'userturn') {                            
+                            this.loggedMsgs.push({
+                                bg: 'bg-danger',
+                                textColor: 'text-white',
+                                text: 'PLAYER HITS MONSTER FOR ' + power
+                            })
+                            
+                        } else {
+                            this.loggedMsgs.push({
+                                bg: 'bg-primary',
+                                textColor: 'text-white',
+                                text: 'MONSTER HITS PLAYER FOR ' + power
+                            })
+
+                        }
+                    },
+                    checkWinner(){
+                        let gameOver = false;
+                        if (this.yourHealth <= 0) {
+                            gameOver = true
+                            alert('YOU LOSE !')
+                        } else if(this.monsterHealth <= 0) {
+                            gameOver = true
+                            alert('YOU WIN !')
+                        }
+
+                        if (gameOver) {
+                            const retry = confirm('New Game?')
+                            if (retry) {
+                                this.toggleStart()
+                                
+                            }
+                        }
+                    },
+                    generateRandomNumber(length){
+                        return Math.floor((Math.random() * length) + 1);
+                    }
                 }
             })
             
