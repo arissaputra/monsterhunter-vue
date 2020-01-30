@@ -12,7 +12,7 @@ const option1 = {
 }
 
 const option2 = {
-    0: '',
+    0: 'ten',
     1: 'eleven',
     2: 'twelve',
     3: 'thirteen',
@@ -59,13 +59,14 @@ const addSeparator = (array, separator) => {
     for (let index = 0; index < array.length; index++) {
         const element = array[index];
         result.push(element)
-        if (element.num && index != 0 && index != array.length -1) {
+        if (element.num && index != 0 && index != array.length -1 && (array[index-1].word != '' || array[index].word != '')) {
             result.push({
                 word: separator
             })
             
         }
     }
+    
     return result
 }
 
@@ -81,6 +82,7 @@ const addParam = (array, numbers) => {
         }
         
     }
+    
     return result
     
 }
@@ -91,10 +93,19 @@ const addFinalParam = (array) => {
     for (let index = 0; index < array.length; index++) {
         const element = array[index];
         result.push(element)
+        
         if (param[start] != undefined && index != array.length - 1) {
-            result.push(param[start] + ' and')
+            if (element != '' && element != ' ') {
+                result.push('and')
+                
+            }
+            if (array[index+1] != '' && array[index+1] != ' ') {
+                result.push(param[start])
+                
+            }
         }
         start += 1
+        
     }
     
     return result.reverse().join(' ');
@@ -149,9 +160,9 @@ const say = (number) => {
         }
         
     }
-
     const resultWithParam = addParam(par, numbers)
     const resultWithSeparator = addSeparator(resultWithParam, 'and')
+    
     return printArr(resultWithSeparator);
     
 }
@@ -175,8 +186,9 @@ export default function calcu(input) {
     let inputDollarsArr = reverse(inputDollars).match(/.{1,3}/g)
     for (let index = 0; index < inputDollarsArr.length; index++) {
         const element = inputDollarsArr[index];
-        let result = say(reverse(element))
-        if (result && result != ' ') {
+        let result = say(parseInt(reverse(element), 10).toString())
+        
+        if (result) {
             resultDollarsArr.push(result);
         } 
         
@@ -205,8 +217,3 @@ export default function calcu(input) {
     return finalResult;
 
 }
-
-// export default function hello() {
-//     return console.log("Hello");
-//     ;
-// }
